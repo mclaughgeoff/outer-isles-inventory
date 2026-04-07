@@ -1,14 +1,14 @@
 export default function StockBadge({ available, reorderPoint, inTransit }) {
   if (available <= 0) {
-    return <span className="badge-danger">Out of Stock</span>;
+    return <span className="badge-danger">Out of stock</span>;
   }
   if (available <= reorderPoint) {
     return (
-      <span className="badge-warning">
-        Low Stock ({available})
-        {inTransit > 0 && <span className="ml-1 badge-info text-[10px]">+{inTransit} incoming</span>}
-      </span>
+      <div className="flex items-center gap-1.5">
+        <span className="badge-warning">Low ({available})</span>
+        {inTransit > 0 && <span className="badge-info">+{inTransit}</span>}
+      </div>
     );
   }
-  return <span className="badge-success">In Stock ({available})</span>;
+  return <span className="badge-success">{available} in stock</span>;
 }

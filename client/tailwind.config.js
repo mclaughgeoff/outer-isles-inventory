@@ -4,21 +4,51 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream: '#FAF7F2',
-        primary: { DEFAULT: '#6B7B44', hover: '#5A6A38' },
-        secondary: '#C4956A',
-        border: '#E5DED5',
-        danger: '#C0564B',
-        warning: '#D4A843',
-        success: '#4A7C59',
+        primary: {
+          DEFAULT: '#6B7B44',
+          hover: '#5A6A38',
+          light: '#F0F3E8',
+          50: '#F5F7F0',
+          100: '#E8EDDA',
+          200: '#D1DABA',
+          300: '#B3C190',
+          400: '#8FA066',
+          500: '#6B7B44',
+          600: '#5A6A38',
+          700: '#47532D',
+          800: '#374023',
+          900: '#272E19',
+        },
+        secondary: {
+          DEFAULT: '#C4956A',
+          light: '#FDF5EF',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'DM Sans', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'SF Mono', 'Fira Code', 'monospace'],
       },
-      boxShadow: {
-        warm: '0 1px 3px rgba(139, 120, 95, 0.12), 0 1px 2px rgba(139, 120, 95, 0.06)',
-        'warm-md': '0 4px 6px rgba(139, 120, 95, 0.1), 0 2px 4px rgba(139, 120, 95, 0.06)',
+      fontSize: {
+        '2xs': ['0.65rem', { lineHeight: '0.85rem' }],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.2s ease-out',
+        'slide-up': 'slideUp 0.2s ease-out',
+        'slide-in-right': 'slideInRight 0.2s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideInRight: {
+          '0%': { opacity: '0', transform: 'translateX(-8px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
       },
     },
   },
