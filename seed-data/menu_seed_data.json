@@ -1,0 +1,77 @@
+[
+  {
+    "name": "LIST MENU ITEMS HERE",
+    "price": null,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Single Macaron",
+    "price": 3.5,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Single Classic Cupcake",
+    "price": 4.0,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Single Premium Cupcake",
+    "price": 4.5,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Decorated Sugar Cookie",
+    "price": 5.0,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Choquette (cone of 6)",
+    "price": null,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Cream Puff",
+    "price": null,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Tartlette",
+    "price": null,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Drop cookie",
+    "price": null,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Cakesicle",
+    "price": 4.5,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Rice Crispy Treat",
+    "price": null,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Cake Slice",
+    "price": null,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Shortbread",
+    "price": null,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Mini pie",
+    "price": null,
+    "category": "b.wild Baking Company"
+  },
+  {
+    "name": "Eclair",
+    "price": null,
+    "category": "b.wild Baking Company"
+  }
+]
