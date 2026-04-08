@@ -88,8 +88,26 @@ async function setupRoutes() {
 // MOCK MODE: Full in-memory API from seed data
 // ====================================================================
 function setupMockRoutes() {
-  const inventoryRaw = JSON.parse(fs.readFileSync(path.join(__dirname, '../seed-data/inventory_seed_data.json'), 'utf8'));
-  const menuRaw = JSON.parse(fs.readFileSync(path.join(__dirname, '../seed-data/menu_seed_data.json'), 'utf8')).filter(m => m.name !== 'LIST MENU ITEMS HERE');
+  // Try multiple possible paths for seed data (differs between dev and Replit deployment)
+  const possiblePaths = [
+    path.join(__dirname, '../seed-data'),
+    path.join(process.cwd(), 'seed-data'),
+    path.join(__dirname, '..', 'seed-data'),
+  ];
+  let seedDir = possiblePaths.find(p => fs.existsSync(path.join(p, 'inventory_seed_data.json')));
+  if (!seedDir) {
+    console.error('  Seed data not found! Tried:', possiblePaths);
+    console.error('  CWD:', process.cwd(), '__dirname:', __dirname);
+    // Create empty fallback data
+    seedDir = null;
+  }
+
+  const inventoryRaw = seedDir
+    ? JSON.parse(fs.readFileSync(path.join(seedDir, 'inventory_seed_data.json'), 'utf8'))
+    : [{ category: 'General', item_name: 'Sample Item', format: 'CPG', brand: 'Sample', sub_sku: 'Sample item', size: '1 EA', moq: 1, distributor: null, delivery_minimum: null, shipping_cost: null, wholesale_cost: 5.00, retail_price: 10.00 }];
+  const menuRaw = seedDir && fs.existsSync(path.join(seedDir, 'menu_seed_data.json'))
+    ? JSON.parse(fs.readFileSync(path.join(seedDir, 'menu_seed_data.json'), 'utf8')).filter(m => m.name !== 'LIST MENU ITEMS HERE')
+    : [];
 
   // Build categories
   const categoryNames = [];

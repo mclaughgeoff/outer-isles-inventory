@@ -10,7 +10,7 @@
     "db:migrate": "cd server && node db/migrate.js",
     "db:seed": "cd server && node db/seed.js",
     "db:setup": "npm run db:migrate && npm run db:seed",
-    "start": "node server/index.js"
+    "start": "node start.js"
   },
   "dependencies": {
     "@types/react": "^19.2.14",
