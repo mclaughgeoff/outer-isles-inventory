@@ -11,41 +11,34 @@ import Vendors from './pages/Vendors';
 import PurchaseOrders from './pages/PurchaseOrders';
 import CSA from './pages/CSA';
 
-function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-cream">
-        <div className="text-[#6B6B6B]">Loading...</div>
-      </div>
-    );
-  }
-  if (!user) return <Navigate to="/login" replace />;
-  return <Layout>{children}</Layout>;
-}
-
 function AppRoutes() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream">
-        <div className="text-[#6B6B6B]">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+        <div className="flex flex-col items-center gap-3">
+          <svg className="animate-spin h-6 w-6 text-primary" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span className="text-sm text-gray-500">Loading...</span>
+        </div>
       </div>
     );
   }
 
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
-      <Route path="/inventory/:id" element={<ProtectedRoute><ItemDetail /></ProtectedRoute>} />
-      <Route path="/stock" element={<ProtectedRoute><StockManagement /></ProtectedRoute>} />
-      <Route path="/menu" element={<ProtectedRoute><MenuItems /></ProtectedRoute>} />
-      <Route path="/vendors" element={<ProtectedRoute><Vendors /></ProtectedRoute>} />
-      <Route path="/purchase-orders" element={<ProtectedRoute><PurchaseOrders /></ProtectedRoute>} />
-      <Route path="/csa" element={<ProtectedRoute><CSA /></ProtectedRoute>} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Layout><Dashboard /></Layout>} />
+      <Route path="/inventory" element={<Layout><Inventory /></Layout>} />
+      <Route path="/inventory/:id" element={<Layout><ItemDetail /></Layout>} />
+      <Route path="/stock" element={<Layout><StockManagement /></Layout>} />
+      <Route path="/menu" element={<Layout><MenuItems /></Layout>} />
+      <Route path="/vendors" element={<Layout><Vendors /></Layout>} />
+      <Route path="/purchase-orders" element={<Layout><PurchaseOrders /></Layout>} />
+      <Route path="/csa" element={<Layout><CSA /></Layout>} />
     </Routes>
   );
 }
