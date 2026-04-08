@@ -13,28 +13,81 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-
-// Serve logo assets
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
-// ---------- Determine mode: PostgreSQL or Mock ----------
-const hasDatabase = !!process.env.DATABASE_URL;
+// ====================================================================
+// SETUP: Try PostgreSQL, fall back to mock mode if anything goes wrong
+// ====================================================================
+async function setupRoutes() {
+  let usingDatabase = false;
 
-if (hasDatabase) {
-  // PostgreSQL mode
-  console.log('DATABASE_URL found — connecting to PostgreSQL');
-  app.use('/api/auth', require('./routes/auth'));
-  app.use('/api/categories', require('./routes/categories'));
-  app.use('/api/inventory', require('./routes/inventory'));
-  app.use('/api/stock', require('./routes/stock'));
-  app.use('/api/dashboard', require('./routes/dashboard'));
-  app.use('/api/menu', require('./routes/menu'));
-  app.use('/api/vendors', require('./routes/vendors'));
-  app.use('/api/purchase-orders', require('./routes/purchaseOrders'));
-} else {
-  // Mock mode — in-memory data from seed files
-  console.log('No DATABASE_URL — running in mock mode (in-memory seed data)');
+  if (process.env.DATABASE_URL) {
+    try {
+      console.log('DATABASE_URL found — testing PostgreSQL connection...');
+      const pool = require('./db/pool');
 
+      // Test the connection
+      await pool.query('SELECT 1');
+      console.log('  PostgreSQL connection successful');
+
+      // Auto-seed if empty
+      const autoSeed = require('./db/auto-seed');
+      await autoSeed(pool);
+
+      // Verify data exists
+      const check = await pool.query('SELECT COUNT(*) FROM inventory_items');
+      if (parseInt(check.rows[0].count) > 0) {
+        console.log(`  Database has ${check.rows[0].count} inventory items — using PostgreSQL mode`);
+        app.use('/api/auth', require('./routes/auth'));
+        app.use('/api/categories', require('./routes/categories'));
+        app.use('/api/inventory', require('./routes/inventory'));
+        app.use('/api/stock', require('./routes/stock'));
+        app.use('/api/dashboard', require('./routes/dashboard'));
+        app.use('/api/menu', require('./routes/menu'));
+        app.use('/api/vendors', require('./routes/vendors'));
+        app.use('/api/purchase-orders', require('./routes/purchaseOrders'));
+        usingDatabase = true;
+      } else {
+        console.log('  Database is empty after seed attempt — falling back to mock mode');
+      }
+    } catch (err) {
+      console.error('  PostgreSQL setup failed:', err.message);
+      console.log('  Falling back to mock mode');
+    }
+  }
+
+  if (!usingDatabase) {
+    console.log('Starting in mock mode (in-memory seed data)');
+    setupMockRoutes();
+  }
+
+  // ---------- Serve React frontend ----------
+  const clientDist = path.join(__dirname, '../client/dist');
+  if (fs.existsSync(clientDist)) {
+    console.log('Serving frontend from', clientDist);
+    app.use(express.static(clientDist));
+    app.get('*', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+  } else {
+    console.log('No client/dist found — frontend not available');
+    app.get('/', (_req, res) => res.json({ status: 'API only', message: 'Build the frontend with: cd client && npm run build' }));
+  }
+
+  // Error handler
+  app.use((err, _req, res, _next) => {
+    console.error('Unhandled error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  });
+
+  // Start server
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\nOuter Isles server running on port ${PORT} (${usingDatabase ? 'PostgreSQL' : 'mock'} mode)\n`);
+  });
+}
+
+// ====================================================================
+// MOCK MODE: Full in-memory API from seed data
+// ====================================================================
+function setupMockRoutes() {
   const inventoryRaw = JSON.parse(fs.readFileSync(path.join(__dirname, '../seed-data/inventory_seed_data.json'), 'utf8'));
   const menuRaw = JSON.parse(fs.readFileSync(path.join(__dirname, '../seed-data/menu_seed_data.json'), 'utf8')).filter(m => m.name !== 'LIST MENU ITEMS HERE');
 
@@ -51,7 +104,6 @@ if (hasDatabase) {
     const onShelf = Math.floor(Math.random() * 8) + 1;
     const inBack = Math.floor(Math.random() * 12);
     const inTransit = Math.random() > 0.8 ? Math.floor(Math.random() * 6) : 0;
-    const reorderPoint = item.moq || 2;
     return {
       id, category_id: categoryMap[item.category], category_name: item.category,
       item_name: item.item_name, format: item.format, brand: item.brand,
@@ -60,7 +112,7 @@ if (hasDatabase) {
       shipping_cost: item.shipping_cost, wholesale_cost: item.wholesale_cost,
       retail_price: item.retail_price, is_active: true,
       qty_on_shelf: onShelf, qty_in_back: inBack, qty_in_transit: inTransit,
-      qty_reserved_csa: 0, reorder_point: reorderPoint,
+      qty_reserved_csa: 0, reorder_point: item.moq || 2,
       qty_total: onShelf + inBack + inTransit, qty_available: onShelf + inBack,
       margin_pct: item.retail_price && item.wholesale_cost
         ? Math.round(((item.retail_price - item.wholesale_cost) / item.retail_price) * 1000) / 10 : null,
@@ -84,7 +136,7 @@ if (hasDatabase) {
 
   const mockUser = { id: 1, name: 'Admin', email: 'admin@outerisles.com', role: 'owner' };
 
-  // Auth
+  // --- Auth ---
   app.post('/api/auth/login', (req, res) => {
     const { email, password } = req.body;
     if (email === 'admin@outerisles.com' && password === 'outerisles2024') {
@@ -102,12 +154,13 @@ if (hasDatabase) {
     catch { res.status(401).json({ error: 'Invalid token' }); }
   });
 
-  // Dashboard
+  // --- Dashboard ---
   app.get('/api/dashboard/summary', (_req, res) => {
     res.json({
       total_items: items.length, active_items: items.length,
       low_stock_count: items.filter(i => i.qty_available <= i.reorder_point).length,
-      pending_purchase_orders: 0, active_csa_members: csaMembers.filter(m => m.subscription_status === 'active').length,
+      pending_purchase_orders: 0,
+      active_csa_members: csaMembers.filter(m => m.subscription_status === 'active').length,
       total_categories: categories.length,
     });
   });
@@ -116,12 +169,12 @@ if (hasDatabase) {
   });
   app.get('/api/dashboard/recent-movements', (_req, res) => res.json([]));
 
-  // Categories
+  // --- Categories ---
   app.get('/api/categories', (_req, res) => {
     res.json(categories.map(c => ({ ...c, item_count: items.filter(i => i.category_id === c.id).length })));
   });
 
-  // Inventory
+  // --- Inventory ---
   app.get('/api/inventory', (req, res) => {
     const { search, category, distributor, has_stock, page = 1, limit = 50 } = req.query;
     let filtered = [...items];
@@ -157,7 +210,7 @@ if (hasDatabase) {
     res.status(201).json(newItem);
   });
 
-  // Stock
+  // --- Stock ---
   app.post('/api/stock/:itemId/move', (req, res) => {
     const item = items.find(i => i.id === parseInt(req.params.itemId));
     if (!item) return res.status(404).json({ error: 'Not found' });
@@ -181,7 +234,7 @@ if (hasDatabase) {
   });
   app.get('/api/stock/movements', (_req, res) => res.json([]));
 
-  // Menu
+  // --- Menu ---
   app.get('/api/menu', (_req, res) => res.json(menuItems));
   app.get('/api/menu/:id', (req, res) => {
     const item = menuItems.find(m => m.id === parseInt(req.params.id));
@@ -219,19 +272,19 @@ if (hasDatabase) {
     res.json(item);
   });
 
-  // Vendors
+  // --- Vendors ---
   app.get('/api/vendors', (_req, res) => res.json(vendors));
 
-  // Purchase Orders
+  // --- Purchase Orders ---
   app.get('/api/purchase-orders', (_req, res) => res.json([]));
 
-  // CSA
+  // --- CSA ---
   app.get('/api/csa/members', (_req, res) => res.json(csaMembers));
   app.post('/api/csa/members', (req, res) => { const m = { id: csaMemberNextId++, ...req.body, created_at: new Date().toISOString() }; csaMembers.push(m); res.status(201).json(m); });
-  app.put('/api/csa/members/:id', (req, res) => { const m = csaMembers.find(m => m.id === parseInt(req.params.id)); if (!m) return res.status(404).json({ error: 'Not found' }); Object.assign(m, req.body); res.json(m); });
+  app.put('/api/csa/members/:id', (req, res) => { const m = csaMembers.find(x => x.id === parseInt(req.params.id)); if (!m) return res.status(404).json({ error: 'Not found' }); Object.assign(m, req.body); res.json(m); });
   app.get('/api/csa/boxes', (_req, res) => res.json(csaBoxes.map(b => ({ ...b, item_count: csaBoxItems.filter(i => i.csa_box_id === b.id).length }))));
   app.post('/api/csa/boxes', (req, res) => { const b = { id: csaBoxNextId++, ...req.body, created_at: new Date().toISOString() }; csaBoxes.push(b); res.status(201).json(b); });
-  app.put('/api/csa/boxes/:id', (req, res) => { const b = csaBoxes.find(b => b.id === parseInt(req.params.id)); if (!b) return res.status(404).json({ error: 'Not found' }); Object.assign(b, req.body); res.json(b); });
+  app.put('/api/csa/boxes/:id', (req, res) => { const b = csaBoxes.find(x => x.id === parseInt(req.params.id)); if (!b) return res.status(404).json({ error: 'Not found' }); Object.assign(b, req.body); res.json(b); });
   app.get('/api/csa/boxes/:id', (req, res) => {
     const box = csaBoxes.find(b => b.id === parseInt(req.params.id));
     if (!box) return res.status(404).json({ error: 'Not found' });
@@ -252,21 +305,23 @@ if (hasDatabase) {
     csaBoxItems = csaBoxItems.filter(bi => bi.id !== parseInt(req.params.itemId));
     res.json({ message: 'Removed' });
   });
+
+  console.log(`  Mock API ready — ${items.length} inventory items, ${menuItems.length} menu items`);
 }
 
-// ---------- Serve React frontend ----------
-const clientDist = path.join(__dirname, '../client/dist');
-if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
-  app.get('*', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
-}
-
-// Error handler
-app.use((err, req, res, _next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Outer Isles server running on port ${PORT} (${hasDatabase ? 'PostgreSQL' : 'mock'} mode)`);
+// ====================================================================
+// START
+// ====================================================================
+setupRoutes().catch(err => {
+  console.error('Fatal startup error:', err);
+  // Even if setup fails, try to start with mock mode
+  setupMockRoutes();
+  const clientDist = path.join(__dirname, '../client/dist');
+  if (fs.existsSync(clientDist)) {
+    app.use(express.static(clientDist));
+    app.get('*', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+  }
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Outer Isles server running on port ${PORT} (mock fallback after error)`);
+  });
 });

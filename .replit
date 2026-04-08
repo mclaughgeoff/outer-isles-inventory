@@ -9,7 +9,7 @@ channel = "stable-24_05"
 PORT = "3000"
 
 [deployment]
-run = ["sh", "-c", "npm run build && npm run start"]
+run = ["sh", "-c", "npm run start"]
 build = ["sh", "-c", "npm install && cd client && npm install && npx vite build"]
 
 [[ports]]
