@@ -10,7 +10,7 @@ PORT = "5000"
 
 [deployment]
 run = ["sh", "-c", "node start.js"]
-build = ["sh", "-c", "npm install && cd client && npm install && cd .. && npx vite build --config client/vite.config.js"]
+build = ["sh", "-c", "npm install && cd client && npm install && npx vite build"]
 
 [[ports]]
 localPort = 5000
