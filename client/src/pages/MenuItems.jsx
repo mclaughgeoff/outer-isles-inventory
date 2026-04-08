@@ -230,19 +230,38 @@ function MenuItemModal({ item, onClose, onSave }) {
     }
   };
 
-  const totalCost = ingredients.reduce((sum, ing) => {
-    if (!ing.inventory_item_id) return sum;
+  const [pricingMode, setPricingMode] = useState('manual'); // 'manual' or 'markup'
+  const [markupPct, setMarkupPct] = useState(100);
+
+  // Calculate per-ingredient costs
+  const ingredientCosts = ingredients.map(ing => {
+    if (!ing.inventory_item_id) return { ...ing, cost: 0, itemName: null, unitCost: 0 };
     const inv = invItems.find(i => i.id === ing.inventory_item_id);
-    if (!inv?.wholesale_cost || !ing.quantity_used) return sum;
-    return sum + (parseFloat(inv.wholesale_cost) * ing.quantity_used);
-  }, 0);
+    if (!inv?.wholesale_cost || !ing.quantity_used) return { ...ing, cost: 0, itemName: inv?.item_name, unitCost: inv?.wholesale_cost || 0 };
+    return { ...ing, cost: parseFloat(inv.wholesale_cost) * ing.quantity_used, itemName: inv.item_name, unitCost: parseFloat(inv.wholesale_cost) };
+  });
+
+  const totalCost = ingredientCosts.reduce((sum, ic) => sum + ic.cost, 0);
+  const markupPrice = totalCost > 0 ? totalCost * (1 + markupPct / 100) : 0;
+
+  // When markup mode changes price, sync it
+  const effectivePrice = pricingMode === 'markup' && totalCost > 0 ? markupPrice : (form.price ? parseFloat(form.price) : 0);
+  const margin = effectivePrice > 0 && totalCost > 0 ? ((effectivePrice - totalCost) / effectivePrice) * 100 : 0;
+
+  const applyMarkupToPrice = (pct) => {
+    setMarkupPct(pct);
+    if (totalCost > 0) {
+      set('price', (totalCost * (1 + pct / 100)).toFixed(2));
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
+      const finalPrice = pricingMode === 'markup' && totalCost > 0 ? markupPrice : (form.price ? parseFloat(form.price) : null);
       const payload = {
         ...form,
-        price: form.price ? parseFloat(form.price) : null,
+        price: finalPrice ? parseFloat(finalPrice.toFixed ? finalPrice.toFixed(2) : finalPrice) : null,
         ingredients: ingredients.filter(i => i.inventory_item_id).map(({ _key, ...rest }) => rest),
       };
       if (item?.id) { await put(`/menu/${item.id}`, payload); }
@@ -277,8 +296,8 @@ function MenuItemModal({ item, onClose, onSave }) {
               <input value={form.vendor} onChange={e => set('vendor', e.target.value)} className="input" placeholder="e.g. b.wild Baking Company" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Price</label>
-              <input type="number" step="0.01" value={form.price} onChange={e => set('price', e.target.value)} className="input font-mono" placeholder="0.00" />
+              <label className="block text-xs font-medium text-gray-500 mb-1">Price {ingredients.length > 0 && totalCost > 0 ? <span className="text-gray-300 font-normal">(set below with cost calculator)</span> : ''}</label>
+              <input type="number" step="0.01" value={form.price} onChange={e => { set('price', e.target.value); setPricingMode('manual'); }} className="input font-mono" placeholder="0.00" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Tax Category</label>
@@ -328,14 +347,130 @@ function MenuItemModal({ item, onClose, onSave }) {
             )}
 
             {ingredients.length > 0 && totalCost > 0 && (
-              <div className="mt-3 flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl">
-                <span className="text-sm font-medium text-gray-700">Est. ingredient cost</span>
-                <div className="flex items-center gap-4">
-                  <span className="font-mono font-semibold text-gray-900">${totalCost.toFixed(2)}</span>
-                  {form.price && totalCost > 0 && (
-                    <span className={`text-xs font-medium ${((parseFloat(form.price) - totalCost) / parseFloat(form.price)) * 100 >= 50 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                      {Math.round(((parseFloat(form.price) - totalCost) / parseFloat(form.price)) * 100)}% margin
-                    </span>
+              <div className="mt-4 border border-gray-200 rounded-xl overflow-hidden">
+                {/* Cost breakdown header */}
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Cost Breakdown</span>
+                    <span className="font-mono text-sm font-semibold text-gray-900">${totalCost.toFixed(2)} total cost</span>
+                  </div>
+                </div>
+
+                {/* Per-ingredient costs */}
+                <div className="divide-y divide-gray-100">
+                  {ingredientCosts.filter(ic => ic.itemName).map((ic, idx) => (
+                    <div key={idx} className="px-4 py-2 flex items-center justify-between text-sm">
+                      <div className="text-gray-600">
+                        <span>{ic.itemName}</span>
+                        <span className="text-gray-400 text-xs ml-1">
+                          ({ic.quantity_used} {ic.unit} × ${ic.unitCost.toFixed(2)})
+                        </span>
+                      </div>
+                      <span className={`font-mono text-xs ${ic.cost > 0 ? 'text-gray-700' : 'text-gray-300'}`}>
+                        {ic.cost > 0 ? `$${ic.cost.toFixed(2)}` : '—'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pricing section */}
+                <div className="bg-primary/5 border-t border-gray-200 px-4 py-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Set Price</span>
+                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+                      <button
+                        onClick={() => setPricingMode('manual')}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${pricingMode === 'manual' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                      >Manual</button>
+                      <button
+                        onClick={() => { setPricingMode('markup'); applyMarkupToPrice(markupPct); }}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${pricingMode === 'markup' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                      >Markup %</button>
+                    </div>
+                  </div>
+
+                  {pricingMode === 'markup' ? (
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-1.5">
+                        {[50, 75, 100, 150, 200, 250, 300].map(pct => (
+                          <button
+                            key={pct}
+                            onClick={() => applyMarkupToPrice(pct)}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                              markupPct === pct
+                                ? 'bg-primary text-white'
+                                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                            }`}
+                          >
+                            {pct}%
+                          </button>
+                        ))}
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            min="0"
+                            step="5"
+                            value={markupPct}
+                            onChange={(e) => applyMarkupToPrice(parseInt(e.target.value) || 0)}
+                            className="input !w-16 !py-1 !px-2 text-xs font-mono text-center"
+                          />
+                          <span className="text-xs text-gray-400">%</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2.5 border border-gray-200">
+                        <div className="text-sm text-gray-600">
+                          ${totalCost.toFixed(2)} × {(1 + markupPct / 100).toFixed(2)}
+                        </div>
+                        <div className="text-right">
+                          <span className="font-mono text-lg font-semibold text-gray-900">${markupPrice.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Sell Price</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={form.price}
+                            onChange={e => set('price', e.target.value)}
+                            className="input font-mono pl-7"
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+                      {form.price && totalCost > 0 && (
+                        <div className="text-right pt-5">
+                          <div className="text-xs text-gray-400">effective markup</div>
+                          <div className="font-mono text-sm font-semibold text-gray-700">
+                            {Math.round(((parseFloat(form.price) - totalCost) / totalCost) * 100)}%
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Margin indicator */}
+                  {effectivePrice > 0 && totalCost > 0 && (
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${margin >= 60 ? 'bg-emerald-500' : margin >= 40 ? 'bg-emerald-400' : margin >= 25 ? 'bg-amber-400' : 'bg-red-400'}`}
+                          style={{ width: `${Math.min(margin, 100)}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className={`font-mono text-sm font-semibold ${margin >= 50 ? 'text-emerald-600' : margin >= 30 ? 'text-amber-600' : 'text-red-600'}`}>
+                          {Math.round(margin)}% margin
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          (${(effectivePrice - totalCost).toFixed(2)} profit)
+                        </span>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -392,6 +527,17 @@ export default function MenuItems() {
     acc[cat].push(item);
     return acc;
   }, {});
+
+  // Calculate ingredient cost for a menu item
+  const getIngredientCost = (menuItem) => {
+    if (!menuItem.ingredients?.length) return 0;
+    return menuItem.ingredients.reduce((sum, ing) => {
+      if (!ing.inventory_item_id) return sum;
+      const inv = invItems.find(i => i.id === ing.inventory_item_id);
+      if (!inv?.wholesale_cost || !ing.quantity_used) return sum;
+      return sum + (parseFloat(inv.wholesale_cost) * ing.quantity_used);
+    }, 0);
+  };
 
   // Inventory surplus helper: items with available > reorder_point * 2
   const getInventorySurplus = (menuItem) => {
@@ -501,18 +647,34 @@ export default function MenuItems() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {categoryItems.map(item => {
                   const surplus = getInventorySurplus(item);
+                  const cost = getIngredientCost(item);
+                  const price = item.price ? Number(item.price) : 0;
+                  const itemMargin = price > 0 && cost > 0 ? Math.round(((price - cost) / price) * 100) : null;
                   return (
                     <div
                       key={item.id}
                       className="card-hover !p-4"
                       onClick={() => { setEditingItem(item); setShowModal(true); }}
                     >
-                      <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-start justify-between gap-2 mb-1">
                         <div className="font-medium text-gray-900">{item.name}</div>
                         <span className="font-mono text-sm font-semibold text-primary flex-shrink-0">
-                          {item.price ? `$${Number(item.price).toFixed(2)}` : '—'}
+                          {price > 0 ? `$${price.toFixed(2)}` : '—'}
                         </span>
                       </div>
+                      {cost > 0 && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs text-gray-400 font-mono">${cost.toFixed(2)} cost</span>
+                          {itemMargin !== null && (
+                            <>
+                              <span className="text-gray-200">·</span>
+                              <span className={`text-xs font-medium font-mono ${itemMargin >= 60 ? 'text-emerald-600' : itemMargin >= 40 ? 'text-emerald-500' : itemMargin >= 25 ? 'text-amber-600' : 'text-red-500'}`}>
+                                {itemMargin}% margin
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
                       {item.vendor && <div className="text-xs text-gray-400 mb-2">from {item.vendor}</div>}
                       {item.description && <div className="text-sm text-gray-500 mb-2">{item.description}</div>}
                       <div className="flex items-center gap-2 mt-3">
