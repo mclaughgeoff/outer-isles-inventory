@@ -71,30 +71,76 @@ async function autoSeed(pool) {
             item.wholesale_cost || null, item.retail_price || null,
           ]
         );
-        const onShelf = Math.floor(Math.random() * 8) + 1;
-        const inBack = Math.floor(Math.random() * 12);
+        // Vary stock levels: ~30% surplus, ~40% normal, ~20% low, ~10% out
+        const rng = Math.random();
+        let onShelf, inBack, inTransit = 0;
+        const reorderPt = item.moq || 2;
+        if (rng < 0.10) {
+          // Out of stock
+          onShelf = 0;
+          inBack = 0;
+          inTransit = Math.random() < 0.5 ? Math.floor(Math.random() * 6) + 1 : 0;
+        } else if (rng < 0.30) {
+          // Low stock (at or below reorder point)
+          onShelf = Math.floor(Math.random() * Math.max(reorderPt, 2));
+          inBack = Math.floor(Math.random() * 2);
+          inTransit = Math.random() < 0.3 ? Math.floor(Math.random() * 4) + 1 : 0;
+        } else if (rng < 0.70) {
+          // Normal stock
+          onShelf = Math.floor(Math.random() * 6) + 2;
+          inBack = Math.floor(Math.random() * 8) + 1;
+        } else {
+          // Surplus stock (well above reorder point)
+          onShelf = Math.floor(Math.random() * 10) + 6;
+          inBack = Math.floor(Math.random() * 15) + 5;
+        }
         await client.query(
-          'INSERT INTO stock_levels (inventory_item_id, qty_on_shelf, qty_in_back, reorder_point) VALUES ($1,$2,$3,$4)',
-          [res.rows[0].id, onShelf, inBack, item.moq || 2]
+          'INSERT INTO stock_levels (inventory_item_id, qty_on_shelf, qty_in_back, qty_in_transit, reorder_point) VALUES ($1,$2,$3,$4,$5)',
+          [res.rows[0].id, onShelf, inBack, inTransit, reorderPt]
         );
         itemCount++;
       }
       console.log(`  ✓ ${itemCount} inventory items seeded with stock levels`);
+
+      // Build lookup of inventory item names to IDs
+      const invLookup = {};
+      const allInvItems = await client.query('SELECT id, item_name FROM inventory_items');
+      for (const row of allInvItems.rows) {
+        // Store first match for each name (some items have duplicate names)
+        if (!invLookup[row.item_name]) {
+          invLookup[row.item_name] = row.id;
+        }
+      }
 
       // Load menu seed data
       const menuPath = path.join(__dirname, '../../seed-data/menu_seed_data.json');
       if (fs.existsSync(menuPath)) {
         const menuData = JSON.parse(fs.readFileSync(menuPath, 'utf8'));
         let menuCount = 0;
+        let ingredientCount = 0;
         for (const item of menuData) {
           if (item.name === 'LIST MENU ITEMS HERE') continue;
-          await client.query(
-            'INSERT INTO menu_items (name, category, price) VALUES ($1,$2,$3)',
+          const menuRes = await client.query(
+            'INSERT INTO menu_items (name, category, price) VALUES ($1,$2,$3) RETURNING id',
             [item.name, item.category || null, item.price || null]
           );
           menuCount++;
+
+          // Seed ingredients if present
+          if (item.ingredients?.length > 0) {
+            for (const ing of item.ingredients) {
+              const invId = invLookup[ing.item_name];
+              if (invId) {
+                await client.query(
+                  'INSERT INTO menu_item_ingredients (menu_item_id, inventory_item_id, quantity_used, unit) VALUES ($1,$2,$3,$4)',
+                  [menuRes.rows[0].id, invId, ing.quantity_used, ing.unit]
+                );
+                ingredientCount++;
+              }
+            }
+          }
         }
-        console.log(`  ✓ ${menuCount} menu items seeded`);
+        console.log(`  ✓ ${menuCount} menu items seeded with ${ingredientCount} ingredient links`);
       }
 
       await client.query('COMMIT');

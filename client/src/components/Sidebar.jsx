@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  DashboardIcon, InventoryIcon, StockIcon, MenuIcon,
+  DashboardIcon, InventoryIcon, StockIcon, StockOverviewIcon, MenuIcon,
   OrdersIcon, VendorsIcon, CSAIcon, IntegrationsIcon, LogoutIcon,
 } from './Icons';
 
@@ -16,6 +16,7 @@ const navSections = [
     label: 'Products',
     items: [
       { to: '/inventory', label: 'Inventory', Icon: InventoryIcon },
+      { to: '/stock-overview', label: 'Stock Overview', Icon: StockOverviewIcon },
       { to: '/stock', label: 'Stock Management', Icon: StockIcon },
       { to: '/menu', label: 'Menu Items', Icon: MenuIcon },
     ],

@@ -11,6 +11,7 @@ import Vendors from './pages/Vendors';
 import PurchaseOrders from './pages/PurchaseOrders';
 import CSA from './pages/CSA';
 import Integrations from './pages/Integrations';
+import StockOverview from './pages/StockOverview';
 
 function AppRoutes() {
   const { loading } = useAuth();
@@ -36,6 +37,7 @@ function AppRoutes() {
       <Route path="/inventory" element={<Layout><Inventory /></Layout>} />
       <Route path="/inventory/:id" element={<Layout><ItemDetail /></Layout>} />
       <Route path="/stock" element={<Layout><StockManagement /></Layout>} />
+      <Route path="/stock-overview" element={<Layout><StockOverview /></Layout>} />
       <Route path="/menu" element={<Layout><MenuItems /></Layout>} />
       <Route path="/vendors" element={<Layout><Vendors /></Layout>} />
       <Route path="/purchase-orders" element={<Layout><PurchaseOrders /></Layout>} />

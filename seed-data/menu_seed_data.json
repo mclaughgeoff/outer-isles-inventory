@@ -1,86 +1,359 @@
 [
   {
     "name": "Single Macaron",
-    "price": 3.5,
+    "price": 3.50,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALMOND FLOUR", "quantity_used": 0.05, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.02, "unit": "lb" },
+      { "item_name": "VANILLA EXTRACT", "quantity_used": 0.01, "unit": "oz" }
+    ]
   },
   {
     "name": "Single Classic Cupcake",
-    "price": 4.0,
+    "price": 4.00,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.1, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.05, "unit": "lb" },
+      { "item_name": "VANILLA EXTRACT", "quantity_used": 0.02, "unit": "oz" },
+      { "item_name": "WHOLE MILK", "quantity_used": 0.1, "unit": "gal" }
+    ]
   },
   {
     "name": "Single Premium Cupcake",
-    "price": 4.5,
+    "price": 4.50,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.1, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.06, "unit": "lb" },
+      { "item_name": "CREAM CHEESE", "quantity_used": 0.03, "unit": "lb" },
+      { "item_name": "VANILLA EXTRACT", "quantity_used": 0.02, "unit": "oz" }
+    ]
   },
   {
     "name": "Decorated Sugar Cookie",
-    "price": 5.0,
+    "price": 5.00,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.12, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.06, "unit": "lb" },
+      { "item_name": "VANILLA EXTRACT", "quantity_used": 0.01, "unit": "oz" }
+    ]
   },
   {
     "name": "Choquette (cone of 6)",
-    "price": null,
+    "price": 6.00,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.15, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.1, "unit": "lb" },
+      { "item_name": "WHOLE MILK", "quantity_used": 0.05, "unit": "gal" }
+    ]
   },
   {
     "name": "Cream Puff",
-    "price": null,
+    "price": 4.50,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.08, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.06, "unit": "lb" },
+      { "item_name": "HEAVY CREAM", "quantity_used": 0.1, "unit": "qt" },
+      { "item_name": "VANILLA EXTRACT", "quantity_used": 0.01, "unit": "oz" }
+    ]
   },
   {
     "name": "Tartlette",
-    "price": null,
+    "price": 5.50,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.1, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.08, "unit": "lb" },
+      { "item_name": "HEAVY CREAM", "quantity_used": 0.05, "unit": "qt" }
+    ]
   },
   {
     "name": "Drop Cookie",
-    "price": null,
+    "price": 3.00,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.08, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.04, "unit": "lb" },
+      { "item_name": "WALNUTS", "quantity_used": 0.02, "unit": "lb" }
+    ]
   },
   {
     "name": "Cakesicle",
-    "price": 4.5,
+    "price": 4.50,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.08, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.05, "unit": "lb" },
+      { "item_name": "CREAM CHEESE", "quantity_used": 0.03, "unit": "lb" }
+    ]
   },
   {
     "name": "Rice Crispy Treat",
-    "price": null,
+    "price": 3.50,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.04, "unit": "lb" },
+      { "item_name": "VANILLA EXTRACT", "quantity_used": 0.01, "unit": "oz" }
+    ]
   },
   {
     "name": "Cake Slice",
-    "price": null,
+    "price": 6.00,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.15, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.1, "unit": "lb" },
+      { "item_name": "HEAVY CREAM", "quantity_used": 0.1, "unit": "qt" },
+      { "item_name": "VANILLA EXTRACT", "quantity_used": 0.02, "unit": "oz" }
+    ]
   },
   {
     "name": "Shortbread",
-    "price": null,
+    "price": 3.50,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.1, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.08, "unit": "lb" }
+    ]
   },
   {
     "name": "Mini Pie",
-    "price": null,
+    "price": 5.00,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.12, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.08, "unit": "lb" },
+      { "item_name": "CINNAMON", "quantity_used": 0.005, "unit": "oz" }
+    ]
   },
   {
     "name": "Eclair",
-    "price": null,
+    "price": 5.00,
     "category": "Baked Goods",
-    "vendor": "b.wild Baking Company"
+    "vendor": "b.wild Baking Company",
+    "ingredients": [
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.08, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.06, "unit": "lb" },
+      { "item_name": "HEAVY CREAM", "quantity_used": 0.1, "unit": "qt" },
+      { "item_name": "VANILLA EXTRACT", "quantity_used": 0.02, "unit": "oz" }
+    ]
+  },
+  {
+    "name": "Turkey Club Sandwich",
+    "price": 12.00,
+    "category": "Sandwiches",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "SOURDOUGH BREAD", "quantity_used": 2, "unit": "slices" },
+      { "item_name": "MAYONNAISE", "quantity_used": 0.03, "unit": "lb" },
+      { "item_name": "DIJON MUSTARD", "quantity_used": 0.01, "unit": "lb" },
+      { "item_name": "KOSHER SALT", "quantity_used": 0.001, "unit": "lb" },
+      { "item_name": "BLACK PEPPERCORN", "quantity_used": 0.001, "unit": "lb" }
+    ]
+  },
+  {
+    "name": "Caprese Panini",
+    "price": 11.00,
+    "category": "Sandwiches",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "MOZZARELLA", "quantity_used": 0.2, "unit": "lb" },
+      { "item_name": "EXTRA VIRGIN OLIVE OIL", "quantity_used": 0.02, "unit": "L" },
+      { "item_name": "BALSAMIC VINEGAR", "quantity_used": 0.02, "unit": "L" },
+      { "item_name": "KOSHER SALT", "quantity_used": 0.001, "unit": "lb" },
+      { "item_name": "BASIL", "quantity_used": 0.005, "unit": "oz" }
+    ]
+  },
+  {
+    "name": "Grilled Cheese Deluxe",
+    "price": 9.00,
+    "category": "Sandwiches",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "SOURDOUGH BREAD", "quantity_used": 2, "unit": "slices" },
+      { "item_name": "BUTTER, SALTED", "quantity_used": 0.04, "unit": "lb" },
+      { "item_name": "CHEDDAR", "quantity_used": 0.15, "unit": "lb" },
+      { "item_name": "MOZZARELLA", "quantity_used": 0.1, "unit": "lb" }
+    ]
+  },
+  {
+    "name": "Italian Sub",
+    "price": 13.00,
+    "category": "Sandwiches",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "PROSCIUTTO", "quantity_used": 0.15, "unit": "lb" },
+      { "item_name": "MOZZARELLA", "quantity_used": 0.1, "unit": "lb" },
+      { "item_name": "EXTRA VIRGIN OLIVE OIL", "quantity_used": 0.02, "unit": "L" },
+      { "item_name": "RED WINE VINEGAR", "quantity_used": 0.01, "unit": "L" },
+      { "item_name": "OREGANO", "quantity_used": 0.002, "unit": "oz" }
+    ]
+  },
+  {
+    "name": "Chicken Pesto Wrap",
+    "price": 12.00,
+    "category": "Sandwiches",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "CHICKEN", "quantity_used": 0.3, "unit": "lb" },
+      { "item_name": "PESTO", "quantity_used": 0.04, "unit": "lb" },
+      { "item_name": "MOZZARELLA", "quantity_used": 0.1, "unit": "lb" },
+      { "item_name": "KOSHER SALT", "quantity_used": 0.001, "unit": "lb" }
+    ]
+  },
+  {
+    "name": "Mushroom Risotto",
+    "price": 16.00,
+    "category": "Prepared Dinners",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "ARBORIO RICE", "quantity_used": 0.25, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.06, "unit": "lb" },
+      { "item_name": "PARMESAN", "quantity_used": 0.08, "unit": "lb" },
+      { "item_name": "CHICKEN STOCK", "quantity_used": 0.5, "unit": "qt" },
+      { "item_name": "WHITE WINE VINEGAR", "quantity_used": 0.02, "unit": "L" },
+      { "item_name": "GARLIC POWDER", "quantity_used": 0.005, "unit": "oz" }
+    ]
+  },
+  {
+    "name": "Pasta Bolognese",
+    "price": 15.00,
+    "category": "Prepared Dinners",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "PENNE RIGATE", "quantity_used": 0.25, "unit": "lb" },
+      { "item_name": "CRUSHED TOMATOES", "quantity_used": 0.5, "unit": "can" },
+      { "item_name": "EXTRA VIRGIN OLIVE OIL", "quantity_used": 0.02, "unit": "L" },
+      { "item_name": "GARLIC POWDER", "quantity_used": 0.005, "unit": "oz" },
+      { "item_name": "OREGANO", "quantity_used": 0.003, "unit": "oz" },
+      { "item_name": "PARMESAN", "quantity_used": 0.05, "unit": "lb" }
+    ]
+  },
+  {
+    "name": "Chicken Piccata",
+    "price": 18.00,
+    "category": "Prepared Dinners",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "CHICKEN", "quantity_used": 0.5, "unit": "lb" },
+      { "item_name": "ALL PURPOSE FLOUR", "quantity_used": 0.05, "unit": "lb" },
+      { "item_name": "BUTTER, UNSALTED", "quantity_used": 0.06, "unit": "lb" },
+      { "item_name": "LEMON JUICE", "quantity_used": 0.05, "unit": "oz" },
+      { "item_name": "CAPERS", "quantity_used": 0.02, "unit": "oz" },
+      { "item_name": "CHICKEN STOCK", "quantity_used": 0.25, "unit": "qt" }
+    ]
+  },
+  {
+    "name": "Baked Ziti",
+    "price": 14.00,
+    "category": "Prepared Dinners",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "PENNE RIGATE", "quantity_used": 0.3, "unit": "lb" },
+      { "item_name": "CRUSHED TOMATOES", "quantity_used": 0.4, "unit": "can" },
+      { "item_name": "MOZZARELLA", "quantity_used": 0.2, "unit": "lb" },
+      { "item_name": "PARMESAN", "quantity_used": 0.05, "unit": "lb" },
+      { "item_name": "RICOTTA", "quantity_used": 0.15, "unit": "lb" },
+      { "item_name": "BASIL", "quantity_used": 0.005, "unit": "oz" }
+    ]
+  },
+  {
+    "name": "Coconut Curry Bowl",
+    "price": 15.00,
+    "category": "Prepared Dinners",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "COCONUT MILK", "quantity_used": 0.5, "unit": "can" },
+      { "item_name": "BROWN RICE", "quantity_used": 0.2, "unit": "lb" },
+      { "item_name": "CURRY POWDER", "quantity_used": 0.01, "unit": "oz" },
+      { "item_name": "GINGER PASTE", "quantity_used": 0.02, "unit": "oz" },
+      { "item_name": "FISH SAUCE", "quantity_used": 0.01, "unit": "oz" },
+      { "item_name": "UNREFINED COCONUT OIL", "quantity_used": 0.02, "unit": "lb" }
+    ]
+  },
+  {
+    "name": "Quinoa Power Bowl",
+    "price": 14.00,
+    "category": "Prepared Dinners",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "QUINOA", "quantity_used": 0.2, "unit": "lb" },
+      { "item_name": "EXTRA VIRGIN OLIVE OIL", "quantity_used": 0.03, "unit": "L" },
+      { "item_name": "LEMON JUICE", "quantity_used": 0.03, "unit": "oz" },
+      { "item_name": "TAHINI", "quantity_used": 0.04, "unit": "lb" },
+      { "item_name": "CHICKPEAS", "quantity_used": 0.3, "unit": "can" }
+    ]
+  },
+  {
+    "name": "House Lemonade",
+    "price": 4.00,
+    "category": "Beverages",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "LEMON JUICE", "quantity_used": 0.1, "unit": "oz" },
+      { "item_name": "HONEY", "quantity_used": 0.03, "unit": "oz" }
+    ]
+  },
+  {
+    "name": "Cold Brew Coffee",
+    "price": 5.00,
+    "category": "Beverages",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "COFFEE", "quantity_used": 0.05, "unit": "lb" }
+    ]
+  },
+  {
+    "name": "Granola Parfait",
+    "price": 7.00,
+    "category": "Sides",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "GRANOLA", "quantity_used": 0.15, "unit": "lb" },
+      { "item_name": "HONEY", "quantity_used": 0.02, "unit": "oz" },
+      { "item_name": "VANILLA EXTRACT", "quantity_used": 0.01, "unit": "oz" }
+    ]
+  },
+  {
+    "name": "Caesar Side Salad",
+    "price": 6.00,
+    "category": "Sides",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "PARMESAN", "quantity_used": 0.04, "unit": "lb" },
+      { "item_name": "EXTRA VIRGIN OLIVE OIL", "quantity_used": 0.02, "unit": "L" },
+      { "item_name": "LEMON JUICE", "quantity_used": 0.02, "unit": "oz" },
+      { "item_name": "DIJON MUSTARD", "quantity_used": 0.005, "unit": "lb" },
+      { "item_name": "GARLIC POWDER", "quantity_used": 0.002, "unit": "oz" }
+    ]
+  },
+  {
+    "name": "Hummus & Pita Plate",
+    "price": 8.00,
+    "category": "Sides",
+    "vendor": "Outer Isles Kitchen",
+    "ingredients": [
+      { "item_name": "HUMMUS", "quantity_used": 0.3, "unit": "lb" },
+      { "item_name": "EXTRA VIRGIN OLIVE OIL", "quantity_used": 0.02, "unit": "L" },
+      { "item_name": "PAPRIKA", "quantity_used": 0.002, "unit": "oz" }
+    ]
   }
 ]

@@ -23,6 +23,7 @@ export const dashboard = {
   summary: () => request('/dashboard/summary'),
   lowStock: () => request('/dashboard/low-stock'),
   recentMovements: () => request('/dashboard/recent-movements'),
+  stockOverview: () => request('/dashboard/stock-overview'),
 };
 
 export const inventory = {

@@ -117,12 +117,26 @@ function setupMockRoutes() {
   const categoryMap = {};
   categories.forEach(c => { categoryMap[c.name] = c.id; });
 
-  // Build inventory items with mock stock
+  // Build inventory items with varied stock levels
   const items = inventoryRaw.map((item, i) => {
     const id = i + 1;
-    const onShelf = Math.floor(Math.random() * 8) + 1;
-    const inBack = Math.floor(Math.random() * 12);
-    const inTransit = Math.random() > 0.8 ? Math.floor(Math.random() * 6) : 0;
+    const reorderPt = item.moq || 2;
+    const rng = Math.random();
+    let onShelf, inBack, inTransit = 0;
+    if (rng < 0.10) { // out of stock
+      onShelf = 0; inBack = 0;
+      inTransit = Math.random() < 0.5 ? Math.floor(Math.random() * 6) + 1 : 0;
+    } else if (rng < 0.30) { // low stock
+      onShelf = Math.floor(Math.random() * Math.max(reorderPt, 2));
+      inBack = Math.floor(Math.random() * 2);
+      inTransit = Math.random() < 0.3 ? Math.floor(Math.random() * 4) + 1 : 0;
+    } else if (rng < 0.70) { // normal
+      onShelf = Math.floor(Math.random() * 6) + 2;
+      inBack = Math.floor(Math.random() * 8) + 1;
+    } else { // surplus
+      onShelf = Math.floor(Math.random() * 10) + 6;
+      inBack = Math.floor(Math.random() * 15) + 5;
+    }
     return {
       id, category_id: categoryMap[item.category], category_name: item.category,
       item_name: item.item_name, format: item.format, brand: item.brand,
@@ -131,7 +145,7 @@ function setupMockRoutes() {
       shipping_cost: item.shipping_cost, wholesale_cost: item.wholesale_cost,
       retail_price: item.retail_price, is_active: true,
       qty_on_shelf: onShelf, qty_in_back: inBack, qty_in_transit: inTransit,
-      qty_reserved_csa: 0, reorder_point: item.moq || 2,
+      qty_reserved_csa: 0, reorder_point: reorderPt,
       qty_total: onShelf + inBack + inTransit, qty_available: onShelf + inBack,
       margin_pct: item.retail_price && item.wholesale_cost
         ? Math.round(((item.retail_price - item.wholesale_cost) / item.retail_price) * 1000) / 10 : null,
@@ -139,10 +153,22 @@ function setupMockRoutes() {
     };
   });
 
-  const menuItems = menuRaw.map((m, i) => ({
-    id: i + 1, name: m.name, category: m.category, vendor: m.vendor || null,
-    price: m.price, is_active: true, ingredients: [], created_at: new Date().toISOString(),
-  }));
+  // Build item name → id lookup for ingredient linking
+  const invNameMap = {};
+  for (const it of items) {
+    if (!invNameMap[it.item_name]) invNameMap[it.item_name] = it.id;
+  }
+
+  const menuItems = menuRaw.map((m, i) => {
+    const ingredients = (m.ingredients || []).map(ing => {
+      const invId = invNameMap[ing.item_name];
+      return invId ? { id: i * 100 + Math.random(), inventory_item_id: invId, item_name: ing.item_name, quantity_used: ing.quantity_used, unit: ing.unit } : null;
+    }).filter(Boolean);
+    return {
+      id: i + 1, name: m.name, category: m.category, vendor: m.vendor || null,
+      price: m.price, is_active: true, ingredients, created_at: new Date().toISOString(),
+    };
+  });
 
   const vendorNames = [...new Set(inventoryRaw.map(i => i.distributor).filter(Boolean))];
   const vendors = vendorNames.map((name, i) => ({ id: i + 1, name, item_count: items.filter(it => it.distributor === name).length }));
@@ -187,6 +213,43 @@ function setupMockRoutes() {
     res.json(items.filter(i => i.qty_available <= i.reorder_point).sort((a, b) => a.qty_available - b.qty_available).slice(0, 20));
   });
   app.get('/api/dashboard/recent-movements', (_req, res) => res.json([]));
+
+  app.get('/api/dashboard/stock-overview', (_req, res) => {
+    const activeItems = items.filter(i => i.is_active !== false);
+    const totalOnShelf = activeItems.reduce((s, i) => s + (i.qty_on_shelf || 0), 0);
+    const totalInBack = activeItems.reduce((s, i) => s + (i.qty_in_back || 0), 0);
+    const totalInTransit = activeItems.reduce((s, i) => s + (i.qty_in_transit || 0), 0);
+    const totalReservedCsa = activeItems.reduce((s, i) => s + (i.qty_reserved_csa || 0), 0);
+    const inStockCount = activeItems.filter(i => i.qty_available > i.reorder_point).length;
+    const lowStockCount = activeItems.filter(i => i.qty_available <= i.reorder_point && i.qty_available > 0).length;
+    const outOfStockCount = activeItems.filter(i => i.qty_available <= 0).length;
+    const totalValue = activeItems.reduce((s, i) => s + ((i.wholesale_cost || 0) * ((i.qty_on_shelf || 0) + (i.qty_in_back || 0))), 0);
+
+    const byCategory = categories.map(c => {
+      const catItems = activeItems.filter(i => i.category_id === c.id);
+      return {
+        category: c.name,
+        on_shelf: catItems.reduce((s, i) => s + (i.qty_on_shelf || 0), 0),
+        in_back: catItems.reduce((s, i) => s + (i.qty_in_back || 0), 0),
+        in_transit: catItems.reduce((s, i) => s + (i.qty_in_transit || 0), 0),
+        item_count: catItems.length,
+      };
+    });
+
+    res.json({
+      totals: {
+        total_on_shelf: totalOnShelf, total_in_back: totalInBack, total_in_transit: totalInTransit,
+        total_reserved_csa: totalReservedCsa, total_on_hand: totalOnShelf + totalInBack,
+        grand_total: totalOnShelf + totalInBack + totalInTransit,
+        in_stock_count: inStockCount, low_stock_count: lowStockCount, out_of_stock_count: outOfStockCount,
+        total_inventory_value: totalValue.toFixed(2),
+      },
+      byCategory,
+      allItems: activeItems.sort((a, b) => ((b.qty_on_shelf || 0) + (b.qty_in_back || 0)) - ((a.qty_on_shelf || 0) + (a.qty_in_back || 0))).slice(0, 50),
+      inTransit: activeItems.filter(i => (i.qty_in_transit || 0) > 0).sort((a, b) => b.qty_in_transit - a.qty_in_transit),
+      recentReceived: [],
+    });
+  });
 
   // --- Categories ---
   app.get('/api/categories', (_req, res) => {

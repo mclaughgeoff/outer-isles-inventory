@@ -162,21 +162,27 @@ function BoxDetail({ box, onBack, onRefresh }) {
   // Calculate surplus score for menu items based on ingredient inventory
   const menuWithSurplus = allMenuItems.map(m => {
     const linked = m.ingredients?.filter(i => i.inventory_item_id) || [];
-    if (linked.length === 0) return { ...m, surplusScore: 0, surplusLabel: null };
+    if (linked.length === 0) return { ...m, surplusScore: 0, surplusLabel: 'unknown', ingredientCount: 0 };
     let minRatio = Infinity;
     let allHaveSurplus = true;
     let anyLow = false;
+    let anyOut = false;
     for (const ing of linked) {
       const inv = invItems.find(i => i.id === ing.inventory_item_id);
       if (!inv) { allHaveSurplus = false; continue; }
       const ratio = inv.qty_available / Math.max(inv.reorder_point || 2, 1);
       minRatio = Math.min(minRatio, ratio);
-      if (ratio <= 1) anyLow = true;
+      if (ratio <= 0) { anyOut = true; anyLow = true; }
+      else if (ratio <= 1) anyLow = true;
       if (ratio <= 2) allHaveSurplus = false;
     }
-    const surplusScore = anyLow ? -1 : (allHaveSurplus ? minRatio : minRatio);
-    const surplusLabel = anyLow ? 'low' : (allHaveSurplus ? 'surplus' : (minRatio > 1 ? 'ok' : 'low'));
-    return { ...m, surplusScore, surplusLabel };
+    let surplusLabel;
+    if (anyOut) surplusLabel = 'avoid';
+    else if (anyLow) surplusLabel = 'low';
+    else if (allHaveSurplus) surplusLabel = 'surplus';
+    else surplusLabel = 'neutral';
+    const surplusScore = anyOut ? -2 : anyLow ? -1 : (allHaveSurplus ? minRatio + 10 : minRatio);
+    return { ...m, surplusScore, surplusLabel, ingredientCount: linked.length };
   }).sort((a, b) => b.surplusScore - a.surplusScore);
 
   const recommendedMenu = menuWithSurplus.filter(m => m.surplusLabel === 'surplus');
@@ -260,21 +266,35 @@ function BoxDetail({ box, onBack, onRefresh }) {
                   />
                 </div>
 
-                {addMode === 'menu' && recommendedMenu.length > 0 && !itemSearch && (
-                  <div className="mb-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                    <div className="text-xs font-semibold text-emerald-700 mb-2">Recommended — surplus ingredients available</div>
-                    <div className="flex flex-wrap gap-2">
-                      {recommendedMenu.map(m => (
-                        <button
-                          key={m.id}
-                          onClick={() => setSelectedItemId(String(m.id))}
-                          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedItemId === String(m.id) ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 hover:bg-emerald-100 border border-emerald-200'}`}
-                        >
-                          {m.name} {m.price ? `— $${Number(m.price).toFixed(2)}` : ''}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                {addMode === 'menu' && !itemSearch && (
+                  <>
+                    {recommendedMenu.length > 0 && (
+                      <div className="mb-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-semibold text-emerald-700">Recommended — Surplus Ingredients</span>
+                          <span className="text-2xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">{recommendedMenu.length}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {recommendedMenu.map(m => (
+                            <button
+                              key={m.id}
+                              onClick={() => setSelectedItemId(String(m.id))}
+                              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedItemId === String(m.id) ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 hover:bg-emerald-100 border border-emerald-200'}`}
+                            >
+                              {m.name} {m.price ? `— $${Number(m.price).toFixed(2)}` : ''}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {menuWithSurplus.filter(m => m.surplusLabel === 'avoid').length > 0 && (
+                      <div className="mb-3 p-2 bg-red-50 rounded-lg border border-red-100 flex items-center gap-2">
+                        <span className="text-2xs font-medium text-red-600">
+                          {menuWithSurplus.filter(m => m.surplusLabel === 'avoid').length} items have out-of-stock ingredients — marked below
+                        </span>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg bg-white mb-3">
@@ -297,24 +317,42 @@ function BoxDetail({ box, onBack, onRefresh }) {
                     ))
                   ) : (
                     filteredMenu.map(m => {
-                      const sLabel = { surplus: 'Surplus', ok: 'Stocked', low: 'Low stock' };
-                      const sColor = { surplus: 'text-emerald-600', ok: 'text-gray-500', low: 'text-red-500' };
+                      const badgeStyles = {
+                        surplus: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20',
+                        neutral: 'bg-gray-100 text-gray-600 ring-1 ring-gray-500/10',
+                        low: 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20',
+                        avoid: 'bg-red-50 text-red-700 ring-1 ring-red-600/20',
+                        unknown: 'bg-gray-50 text-gray-400 ring-1 ring-gray-300/30',
+                      };
+                      const badgeLabels = {
+                        surplus: 'Surplus',
+                        neutral: 'Stocked',
+                        low: 'Low Ingredients',
+                        avoid: 'Avoid — Out of Stock',
+                        unknown: 'No Ingredients Linked',
+                      };
+                      const badgeIcons = {
+                        surplus: '↑',
+                        neutral: '•',
+                        low: '↓',
+                        avoid: '✕',
+                        unknown: '?',
+                      };
                       return (
                         <button
                           key={m.id}
                           onClick={() => setSelectedItemId(String(m.id))}
-                          className={`w-full text-left px-3 py-2 text-sm border-b border-gray-50 transition-colors flex items-center justify-between ${selectedItemId === String(m.id) ? 'bg-primary/10 text-primary' : 'hover:bg-gray-50'}`}
+                          className={`w-full text-left px-3 py-2.5 text-sm border-b border-gray-50 transition-colors flex items-center justify-between gap-2 ${selectedItemId === String(m.id) ? 'bg-primary/10 text-primary' : m.surplusLabel === 'avoid' ? 'opacity-60 hover:bg-red-50/50' : 'hover:bg-gray-50'}`}
                         >
-                          <div>
+                          <div className="min-w-0">
                             <span className="font-medium">{m.name}</span>
                             {m.category && <span className="text-gray-400 text-xs ml-2">{m.category}</span>}
-                            {m.price && <span className="text-gray-400 text-xs ml-1">— ${Number(m.price).toFixed(2)}</span>}
+                            {m.price ? <span className="text-gray-400 text-xs ml-1">— ${Number(m.price).toFixed(2)}</span> : null}
                           </div>
-                          {m.surplusLabel && (
-                            <span className={`text-xs font-medium ${sColor[m.surplusLabel] || 'text-gray-400'}`}>
-                              {sLabel[m.surplusLabel] || '—'}
-                            </span>
-                          )}
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-medium whitespace-nowrap flex-shrink-0 ${badgeStyles[m.surplusLabel] || badgeStyles.unknown}`}>
+                            <span>{badgeIcons[m.surplusLabel] || '?'}</span>
+                            {badgeLabels[m.surplusLabel] || 'Unknown'}
+                          </span>
                         </button>
                       );
                     })
