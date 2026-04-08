@@ -195,13 +195,16 @@ function setupMockRoutes() {
 
   // --- Inventory ---
   app.get('/api/inventory', (req, res) => {
-    const { search, category, distributor, has_stock, page = 1, limit = 50 } = req.query;
+    const { search, category, distributor, has_stock, stock_filter, page = 1, limit = 50 } = req.query;
     let filtered = [...items];
     if (search) { const s = search.toLowerCase(); filtered = filtered.filter(i => i.item_name.toLowerCase().includes(s) || (i.brand && i.brand.toLowerCase().includes(s)) || (i.sub_sku && i.sub_sku.toLowerCase().includes(s))); }
     if (category) filtered = filtered.filter(i => i.category_name === category);
     if (distributor) filtered = filtered.filter(i => i.distributor === distributor);
     if (has_stock === 'true') filtered = filtered.filter(i => i.qty_available > 0);
     if (has_stock === 'false') filtered = filtered.filter(i => i.qty_available <= 0);
+    if (stock_filter === 'low') filtered = filtered.filter(i => i.qty_available > 0 && i.qty_available <= i.reorder_point);
+    if (stock_filter === 'out') filtered = filtered.filter(i => i.qty_available <= 0);
+    if (stock_filter === 'in') filtered = filtered.filter(i => i.qty_available > i.reorder_point);
     const total = filtered.length;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     res.json({ items: filtered.slice(offset, offset + parseInt(limit)), total, page: parseInt(page), totalPages: Math.ceil(total / parseInt(limit)) });

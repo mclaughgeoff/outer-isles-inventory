@@ -5,7 +5,7 @@ import { InventoryIcon, AlertIcon, OrdersIcon, CSAIcon } from '../components/Ico
 
 const statCards = [
   { key: 'active_items', label: 'Active Items', Icon: InventoryIcon, color: 'bg-primary/10 text-primary', to: '/inventory' },
-  { key: 'low_stock_count', label: 'Low Stock Alerts', Icon: AlertIcon, color: 'bg-red-50 text-red-500', to: '/inventory?has_stock=false', danger: true },
+  { key: 'low_stock_count', label: 'Low Stock Alerts', Icon: AlertIcon, color: 'bg-red-50 text-red-500', to: '/inventory?stock_filter=low', danger: true },
   { key: 'pending_purchase_orders', label: 'Pending POs', Icon: OrdersIcon, color: 'bg-amber-50 text-amber-500', to: '/purchase-orders' },
   { key: 'active_csa_members', label: 'CSA Members', Icon: CSAIcon, color: 'bg-blue-50 text-blue-500', to: '/csa' },
 ];

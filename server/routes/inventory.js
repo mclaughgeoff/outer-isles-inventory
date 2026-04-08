@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    const { category, brand, distributor, search, has_stock, page = 1, limit = 50 } = req.query;
+    const { category, brand, distributor, search, has_stock, stock_filter, page = 1, limit = 50 } = req.query;
     const conditions = ['i.is_active = true'];
     const params = [];
     let idx = 1;
@@ -32,6 +32,14 @@ router.get('/', async (req, res, next) => {
       conditions.push('(s.qty_on_shelf + s.qty_in_back) > 0');
     } else if (has_stock === 'false') {
       conditions.push('(s.qty_on_shelf + s.qty_in_back) = 0');
+    }
+    if (stock_filter === 'low') {
+      conditions.push('(s.qty_on_shelf + s.qty_in_back - s.qty_reserved_csa) <= s.reorder_point');
+      conditions.push('(s.qty_on_shelf + s.qty_in_back - s.qty_reserved_csa) > 0');
+    } else if (stock_filter === 'out') {
+      conditions.push('(s.qty_on_shelf + s.qty_in_back - s.qty_reserved_csa) <= 0');
+    } else if (stock_filter === 'in') {
+      conditions.push('(s.qty_on_shelf + s.qty_in_back - s.qty_reserved_csa) > s.reorder_point');
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

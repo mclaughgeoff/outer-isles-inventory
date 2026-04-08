@@ -10,21 +10,22 @@ export default function Inventory() {
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [distributor, setDistributor] = useState(searchParams.get('distributor') || '');
+  const [stockFilter, setStockFilter] = useState(searchParams.get('stock_filter') || '');
   const [page, setPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(!!searchParams.get('stock_filter'));
 
   const { data: cats } = useFetch(() => catApi.list());
   const { data, loading, refetch } = useFetch(
-    () => inventory.list({ search, category, distributor, page, limit: 50 }),
-    [search, category, distributor, page]
+    () => inventory.list({ search, category, distributor, stock_filter: stockFilter, page, limit: 50 }),
+    [search, category, distributor, stockFilter, page]
   );
 
   useEffect(() => {
     const timer = setTimeout(() => { setPage(1); refetch(); }, 300);
     return () => clearTimeout(timer);
-  }, [search, category, distributor]);
+  }, [search, category, distributor, stockFilter]);
 
-  const hasFilters = category || distributor;
+  const hasFilters = category || distributor || stockFilter;
 
   return (
     <div className="animate-fade-in">
@@ -61,7 +62,7 @@ export default function Inventory() {
             {hasFilters && <span className="w-1.5 h-1.5 bg-primary rounded-full" />}
           </button>
           {hasFilters && (
-            <button onClick={() => { setCategory(''); setDistributor(''); }} className="btn-ghost text-xs">
+            <button onClick={() => { setCategory(''); setDistributor(''); setStockFilter(''); }} className="btn-ghost text-xs">
               Clear filters
             </button>
           )}
@@ -79,6 +80,12 @@ export default function Inventory() {
               <option value="">All Distributors</option>
               <option value="FAIRE">Faire</option>
               <option value="AIRGOODS">Air Goods</option>
+            </select>
+            <select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)} className="input max-w-[180px]">
+              <option value="">All Stock Levels</option>
+              <option value="low">Low Stock</option>
+              <option value="out">Out of Stock</option>
+              <option value="in">In Stock</option>
             </select>
           </div>
         )}
