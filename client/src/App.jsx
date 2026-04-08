@@ -10,6 +10,7 @@ import MenuItems from './pages/MenuItems';
 import Vendors from './pages/Vendors';
 import PurchaseOrders from './pages/PurchaseOrders';
 import CSA from './pages/CSA';
+import Integrations from './pages/Integrations';
 
 function AppRoutes() {
   const { loading } = useAuth();
@@ -39,6 +40,7 @@ function AppRoutes() {
       <Route path="/vendors" element={<Layout><Vendors /></Layout>} />
       <Route path="/purchase-orders" element={<Layout><PurchaseOrders /></Layout>} />
       <Route path="/csa" element={<Layout><CSA /></Layout>} />
+      <Route path="/integrations" element={<Layout><Integrations /></Layout>} />
     </Routes>
   );
 }

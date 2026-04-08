@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   DashboardIcon, InventoryIcon, StockIcon, MenuIcon,
-  OrdersIcon, VendorsIcon, CSAIcon, LogoutIcon,
+  OrdersIcon, VendorsIcon, CSAIcon, IntegrationsIcon, LogoutIcon,
 } from './Icons';
 
 const navSections = [
@@ -26,6 +26,12 @@ const navSections = [
       { to: '/purchase-orders', label: 'Purchase Orders', Icon: OrdersIcon },
       { to: '/vendors', label: 'Vendors', Icon: VendorsIcon },
       { to: '/csa', label: 'CSA Boxes', Icon: CSAIcon },
+    ],
+  },
+  {
+    label: 'Settings',
+    items: [
+      { to: '/integrations', label: 'Integrations', Icon: IntegrationsIcon },
     ],
   },
 ];
