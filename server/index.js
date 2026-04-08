@@ -1,4 +1,12 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+
+// If no DATABASE_URL, run the mock server (works without PostgreSQL)
+if (!process.env.DATABASE_URL) {
+  console.log('No DATABASE_URL found — starting in mock mode (in-memory data)');
+  require('./mock-server');
+  return;
+}
+
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
