@@ -46,6 +46,7 @@ async function setupRoutes() {
         app.use('/api/menu', require('./routes/menu'));
         app.use('/api/vendors', require('./routes/vendors'));
         app.use('/api/purchase-orders', require('./routes/purchaseOrders'));
+        app.use('/api/csa', require('./routes/csa'));
         usingDatabase = true;
       } else {
         console.log('  Database is empty after seed attempt — falling back to mock mode');
